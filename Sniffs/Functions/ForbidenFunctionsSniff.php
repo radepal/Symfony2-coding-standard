@@ -12,16 +12,7 @@
 
 class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PHP_ForbiddenFunctionsSniff
 {
-    /**
-     * A list of tokenizers this sniff supports.
-     *
-     * @var array
-     */
-    public $supportedTokenizers = array(
-        'PHP',
-        'JS',
-    );
-         /**
+  /**
 	     * A list of forbidden functions with their alternatives.
 	     *
 	     * @var array(string => string|null)
@@ -35,27 +26,15 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	             'clansuite_debug::firebug' => 'null',
 	
 	             # 3) Discourages the use of PHP debugging functions
-	             'console.log' 		=> 'null',
-	             'print_r'          => 'null',
-	             'var_export'       => 'null',
-	             'var_dump'         => 'null'
+	             'console.log' 		=> null,
+	             'print_r'          => null,
+	             'var_export'       => null,
+	             'var_dump'         => null
 
 		);
-		/**
-	     * Returns an array of tokens this test wants to listen for.
-	     *
-	     * @return array
-	     */
-	    public function register()
-	    {
-	        return array(
-	                T_STRING,
-	                T_PRINT  #,
-	               );
-	    }
-		/**
 
-     * If true, an error will be thrown; otherwise a warning.
+
+     /* If true, an error will be thrown; otherwise a warning.
      *
      * @var bool 
      */
