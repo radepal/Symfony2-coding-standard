@@ -19,17 +19,18 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	     */
 	    protected $forbiddenFunctions = array(
 
-	             # 2) Discourages the use of our own debugging helper methods
-                 'Clansuite_Debug::printR' => 'null',
-	             'clansuite_debug::printr' => 'null',
-	             'Clansuite_Debug::firebug' => 'null',
-	             'clansuite_debug::firebug' => 'null',
+
 	
 	             # 3) Discourages the use of PHP debugging functions
-	             'console.log' 		=> null,
+	             'print' 		    => null,
+	             'echo'             => null,
 	             'print_r'          => null,
+	             'vprintf'          => null,
+	             'printf'           => null,
+	             'debug_print_backtrace'          => null,
 	             'var_export'       => null,
 	             'var_dump'         => null
+	             
 
 		);
 
