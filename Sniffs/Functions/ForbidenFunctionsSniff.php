@@ -7,7 +7,7 @@
  * coding standard specifies: "Add a blank line before return statements,
  * unless the return is alone inside a statement-group (like an if statement);"
  *
- * @author Radosłąw Palczyński <radepal@gmail.com>
+ * @author Radosław Palczyński <radepal@gmail.com>
  */
 
 class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PHP_ForbiddenFunctionsSniff
@@ -33,7 +33,19 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	             
 
 		);
+ /**
+* Returns an array of tokens this test wants to listen for.
+*
+* @return array
+*/
+    public function register()
+    {
+        $tokens = parent::register();
+        $tokens[] = T_PRINT;
+        $tokens[] = T_ECHO;
+        return $tokens;
 
+    }
 
      /* If true, an error will be thrown; otherwise a warning.
      *
