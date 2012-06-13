@@ -23,7 +23,7 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	
 	             # 3) Discourages the use of PHP debugging functions
 	             'print' 		    => null,
-	             'echo'             => null,
+	            # 'echo'             => null,
 	             'print_r'          => null,
 	             'vprintf'          => null,
 	             'printf'           => null,
