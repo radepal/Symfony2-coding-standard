@@ -40,7 +40,8 @@
     <rule ref="Squiz.PHP.LowercasePHPFunctions"/>
     <rule ref="Squiz.Scope.MemberVarScope"/>
 
-	<rule ref="Symfony2.Functions.ForbidenFunctions"/>
+    <rule ref="Symfony2.Functions.ForbidenFunctions"/>
+    <rule ref="Symfony2.Commenting.TestsTagsComment"/>
 
     <!-- We provide our own subclass of PEAR's ClassComment and FunctionComment sniff, but these will do: -->
     <rule ref="PEAR.Commenting.InlineComment"/>
