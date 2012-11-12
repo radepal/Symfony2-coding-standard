@@ -74,6 +74,7 @@ class Symfony2_Sniffs_Commenting_TestsTagsCommentSniff implements PHP_CodeSniffe
             foreach ($tags as $tag) {
                 if ('covers' === $tag['tag']) {
                     $hasTag=true;
+                    break;
                 }
             }
             if (!$hasTag) {
