@@ -39,9 +39,6 @@ class Symfony2_Sniffs_Commenting_TestsTagsCommentSniff implements PHP_CodeSniffe
         $find = array(
                  T_COMMENT,
                  T_DOC_COMMENT,
-                 T_CLASS,
-                 T_FUNCTION,
-                 T_OPEN_TAG,
                 );
 
         $commentEnd = $phpcsFile->findPrevious($find, ($stackPtr - 1));
@@ -49,10 +46,22 @@ class Symfony2_Sniffs_Commenting_TestsTagsCommentSniff implements PHP_CodeSniffe
         if ($commentEnd === false) {
             return;
         }
+        
+        // If there is any code between the function keyword and the doc block
+        // then the doc block is not for us.
+        $ignore    = PHP_CodeSniffer_Tokens::$scopeModifiers;
+        $ignore[]  = T_STATIC;
+        $ignore[]  = T_WHITESPACE;
+        $ignore[]  = T_ABSTRACT;
+        $ignore[]  = T_FINAL;
+        $prevToken = $phpcsFile->findPrevious($ignore, ($stackPtr - 1), null, true);
+        if ($prevToken !== $commentEnd) {
+            return;
+        }
 
         $this->currentFile = $phpcsFile;
 
-        $commentStart = ($phpcsFile->findPrevious(T_DOC_COMMENT, ($commentEnd - 1), null, true) + 1);
+        $commentStart = ($phpcsFile->findPrevious(array(T_COMMENT,T_DOC_COMMENT), ($commentEnd - 1), null, true) + 1);
 
         $comment           = $phpcsFile->getTokensAsString($commentStart, ($commentEnd - $commentStart + 1));
 
@@ -91,7 +100,7 @@ class Symfony2_Sniffs_Commenting_TestsTagsCommentSniff implements PHP_CodeSniffe
      */
     public function register()
     {
-        return array(T_COMMENT);
+        return array(T_FUNCTION);
 
     }//end register()
 
@@ -99,3 +108,4 @@ class Symfony2_Sniffs_Commenting_TestsTagsCommentSniff implements PHP_CodeSniffe
 }//end class
 
 ?> 
+
