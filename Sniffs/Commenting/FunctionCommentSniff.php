@@ -1,4 +1,16 @@
 <?php
+/**
+ * This file is part of the Symfony2-coding-standard (phpcs standard)
+ *
+ * PHP version 5
+ *
+ * @category PHP
+ * @package  PHP_CodeSniffer-Symfony2
+ * @author   Symfony2-phpcs-authors <Symfony2-coding-standard@opensky.github.com>
+ * @license  http://spdx.org/licenses/MIT MIT License
+ * @version  GIT: master
+ * @link     https://github.com/opensky/Symfony2-coding-standard
+ */
 
 if (class_exists('PEAR_Sniffs_Commenting_FunctionCommentSniff', true) === false) {
     $error = 'Class PEAR_Sniffs_Commenting_FunctionCommentSniff not found';
@@ -10,43 +22,69 @@ if (class_exists('PEAR_Sniffs_Commenting_FunctionCommentSniff', true) === false)
  *
  * Verifies that :
  * <ul>
- *  <li>There is a @return tag iff a return statement exists inside the method</li>
+ *  <li>There is a &#64;return tag if a return statement exists inside the method</li>
  * </ul>
  *
- * @package   PHP_CodeSniffer
- * @author    Felix Brandt <mail@felixbrandt.de>
- * @license   http://matrix.squiz.net/developer/tools/php_cs/licence BSD Licence
- * @link      http://pear.php.net/package/PHP_CodeSniffer
+ * @category PHP
+ * @package  PHP_CodeSniffer
+ * @author   Felix Brandt <mail@felixbrandt.de>
+ * @license  http://spdx.org/licenses/BSD-3-Clause BSD 3-clause "New" or "Revised" License
+ * @link     http://pear.php.net/package/PHP_CodeSniffer
  */
 class Symfony2_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting_FunctionCommentSniff
 {
 
     /**
-     * Process the return comment of this function comment.
-     *
-     * @param int $commentStart The position in the stack where the comment started.
-     * @param int $commentEnd   The position in the stack where the comment ended.
-     *
-     * @return void
+     * @var string
      */
-    protected function processReturn($commentStart, $commentEnd)
+    public $requiredScopes = 'public';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
-        if ($this->isInheritDoc()) {
+        if (false === $commentEnd = $phpcsFile->findPrevious(array(T_COMMENT, T_DOC_COMMENT, T_CLASS, T_FUNCTION, T_OPEN_TAG), ($stackPtr - 1))) {
             return;
         }
 
-        $tokens = $this->currentFile->getTokens();
-        $funcPtr = $this->currentFile->findNext(T_FUNCTION, $commentEnd);
+        $tokens = $phpcsFile->getTokens();
+        $code = $tokens[$commentEnd]['code'];
+
+        // a comment is not required on protected/private methods
+        $method = $phpcsFile->getMethodProperties($stackPtr);
+        $commentRequired = $this->isRequiredScope($method['scope']);
+
+        if (($code === T_COMMENT && !$commentRequired)
+            || ($code !== T_DOC_COMMENT && !$commentRequired)
+        ) {
+            return;
+        }
+
+        parent::process($phpcsFile, $stackPtr);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function processReturn(PHP_CodeSniffer_File $phpcsFile, $stackPtr, $commentStart)
+    {
+        if ($this->isInheritDoc($phpcsFile, $stackPtr)) {
+            return;
+        }
+
+        $tokens = $phpcsFile->getTokens();
+        $funcPtr = $phpcsFile->findNext(T_FUNCTION, $commentStart);
 
         // Only check for a return comment if a non-void return statement exists
-        if (isset($tokens[$funcPtr]['scope_opener'])) {
-            $start = $tokens[$funcPtr]['scope_opener'];
+        if (isset($tokens[$stackPtr]['scope_opener'])) {
+            $start = $tokens[$stackPtr]['scope_opener'];
 
             // iterate over all return statements of this function,
             // run the check on the first which is not only 'return;'
-            while ($returnToken = $this->currentFile->findNext(T_RETURN, $start, $tokens[$funcPtr]['scope_closer'])) {
+            while ($returnToken = $phpcsFile->findNext(T_RETURN, $start, $tokens[$stackPtr]['scope_closer'])) {
                 if ($this->isMatchingReturn($tokens, $returnToken)) {
-                    parent::processReturn($commentStart, $commentEnd);
+                    parent::processReturn($phpcsFile, $stackPtr, $commentStart);
                     break;
                 }
                 $start = $returnToken + 1;
@@ -56,32 +94,34 @@ class Symfony2_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commen
     } /* end processReturn() */
 
     /**
-     * Is the comment an inheritdoc?
+     * Checks if the comment an inheritdoc?
      *
-     * @return boolean True if the comment is an inheritdoc
+     * @param PHP_CodeSniffer_File $phpcsFile
+     * @param int                  $stackPtr
+     *
+     * @return bool
      */
-    protected function isInheritDoc ()
+    protected function isInheritDoc(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
-        $content = $this->commentParser->getComment()->getContent();
+        $tokens = $phpcsFile->getTokens();
+        $start = $phpcsFile->findPrevious(T_DOC_COMMENT_OPEN_TAG, $stackPtr - 1);
+        $end = $phpcsFile->findNext(T_DOC_COMMENT_CLOSE_TAG, $start);
+
+        $content = $phpcsFile->getTokensAsString($start, ($end - $start));
 
         return preg_match('#{@inheritdoc}#i', $content) === 1;
     } // end isInheritDoc()
 
     /**
-     * Process the function parameter comments.
-     *
-     * @param int $commentStart The position in the stack where
-     *                          the comment started.
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    protected function processParams($commentStart)
+    protected function processParams(PHP_CodeSniffer_File $phpcsFile, $stackPtr, $commentStart)
     {
-        if ($this->isInheritDoc()) {
+        if ($this->isInheritDoc($phpcsFile, $stackPtr)) {
             return;
         }
 
-        parent::processParams($commentStart);
+        parent::processParams($phpcsFile, $stackPtr, $commentStart);
     } // end processParams()
 
     /**
@@ -92,15 +132,25 @@ class Symfony2_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commen
      *
      * @return boolean True if the return does not return anything
      */
-    protected function isMatchingReturn ($tokens, $returnPos)
+    protected function isMatchingReturn($tokens, $returnPos)
     {
-      do {
-        $returnPos++;
-      } while ($tokens[$returnPos]['code'] === T_WHITESPACE);
+        do {
+            $returnPos++;
+        } while ($tokens[$returnPos]['code'] === T_WHITESPACE);
 
-      return $tokens[$returnPos]['code'] !== T_SEMICOLON;
+        return $tokens[$returnPos]['code'] !== T_SEMICOLON;
+    }
+
+    /**
+     * Check if the given function visibility scope needs to have a docblock.
+     *
+     * @param string $scope Visibility scope of the function.
+     *
+     * @return bool
+     */
+    protected function isRequiredScope($scope)
+    {
+        return strpos($this->requiredScopes, $scope) !== FALSE;
     }
 
 }//end class
-
-?>

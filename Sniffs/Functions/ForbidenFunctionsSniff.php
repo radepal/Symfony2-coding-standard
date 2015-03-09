@@ -17,10 +17,10 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	     *
 	     * @var array(string => string|null)
 	     */
-	    protected $forbiddenFunctions = array(
+	    public $forbiddenFunctions = array(
 
 
-	
+
 	             # 3) Discourages the use of PHP debugging functions
 	             'print' 		    => null,
 	             'echo'             => null,
@@ -30,7 +30,7 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 	             'debug_print_backtrace'          => null,
 	             'var_export'       => null,
 	             'var_dump'         => null
-	             
+
 
 		);
  /**
@@ -49,7 +49,7 @@ class Symfony2_Sniffs_Functions_ForbidenFunctionsSniff extends Generic_Sniffs_PH
 
      /* If true, an error will be thrown; otherwise a warning.
      *
-     * @var bool 
+     * @var bool
      */
 
     public $error = true;
